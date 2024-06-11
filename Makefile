@@ -4,6 +4,11 @@ dev:
 	poetry run flask --app page_analyzer:app run
 lint:
 	poetry run flake8 page_analyzer
+test:
+	poetry run pytest -vv
+selfcheck:
+	poetry check
+check: selfcheck test lint
 
 PORT ?= 8000
 start:
