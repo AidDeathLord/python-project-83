@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+
+{% block messages %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      {% if category == 'error' %}
+        <div class="alert alert-danger" role="alert">
+          {{ msg }}
+        </div>
+      {% endif %}
+      {% if category == 'success' %}
+        <div class="alert alert-success" role="alert">
+          {{ msg }}
+        </div>
+      {% endif %}
+      {% if category == 'warning' %}
+        <div class="alert alert-info" role="alert">
+          {{ msg }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>Сайт: {{ url }}</h1>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover text-nowrap" data-test="url">
+      <tbody>
+        <tr>
+          <td>ID</td>
+          <td>{{ id }}</td>
+        </tr>
+        <tr>
+          <td>Имя</td>
+          <td>{{ url }}</td>
+        </tr>
+        <tr>
+          <td>Дата создания</td>
+          <td>{{ created_at }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
