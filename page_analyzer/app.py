@@ -23,24 +23,37 @@ def index():
     return render_template('index.html', messages=messages)
 
 
-@app.post('/urls')
+@app.route('/urls')
+def urls():
+    _urls = db.get_all_urls()
+    return render_template('urls.html', urls=_urls)
+
+
+@app.post('/url')
 def post_urls():
     url = request.form.get('url', '')
-    #
+
+    # проверяем существует ли сайт, если нет - возвращаем оповещение
     if validate(url):
         messages = get_flashed_messages(with_categories=True)
         return render_template('index.html', messages=messages), 402
-    #
+
+    # преобразуем ссылку к нужному формату
     url = urlparse(url)
     correct_url = f'{url.scheme}://{url.netloc}'
-    #
-    url_id = db.add_url(correct_url)
-    if url_id is not None:
-        flash('Страница уже существует', 'warning')
-        return redirect(url_for('get_url', id=url_id[0]))
 
+    # если ссылка уже есть получаем id
+    # и переходим на страницу ссылки
+    check = db.check_url(correct_url)
+    if check:
+        flash('Страница уже существует', 'warning')
+        return redirect(url_for('get_url', id=check))
+
+    # добавляем ссылку в базу, получаем ее id
+    # переходим на страницу сайта по его id в базе
+    url_id = db.add_url(correct_url)
     flash('Страница успешно добавлена', 'success')
-    return redirect(url_for('get_url', id=url_id[0]))
+    return redirect(url_for('get_url', id=url_id))
 
 
 @app.get('/urls/<int:id>')
@@ -54,10 +67,10 @@ def get_url(id):
                            created_at=created_at)
 
 
-def validate(site):
-    if not validators.url(site):
+def validate(url):
+    if not validators.url(url):
         flash('Некорректный URL', 'error')
-    elif len(site) > 255:
+    elif len(url) > 255:
         flash('URL не должен превышать 255 символов', 'error')
     else:
         return False

@@ -13,7 +13,14 @@
     </tr>
     </thead>
     <tbody>
-
+      {% if urls %}
+        {% for row in urls %}
+          <tr>
+            <th>{{ row['id'] }}</th>
+            <th><a href="{{ url_for('get_url', id=row['id']) }}">{{ row['name'] }}</a></th>
+          </tr>
+        {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 </div>

@@ -1,41 +1,54 @@
 from dotenv import load_dotenv
 import datetime
 import psycopg2
+from psycopg2.extras import DictCursor
 import os
 
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-CONN = psycopg2.connect(DATABASE_URL)
-CURS = CONN.cursor()
+conn = psycopg2.connect(DATABASE_URL)
 
 
-def add_url(url):
-    insert_query = """INSERT INTO urls (name, created_at) 
-                      VALUES (%s, %s)
-                      RETURNING id"""
-    item_create_time = datetime.date.today()
-    item_tuple = (url, item_create_time)
-    CURS.execute(insert_query, item_tuple)
-    result = CURS.fetchone()
-    return result
+# добавляем ссылки в базу и возвращаем ее id
+def add_url(url: str) -> int:
+    with conn.cursor() as cur:
+        sql = """INSERT INTO urls (name, created_at) 
+                 VALUES (%s, %s)
+                 RETURNING id;"""
+        cur.execute(sql, (url, datetime.date.today()))
+        conn.commit()
+        return cur.fetchone()[0]
 
 
-def check_url(url):
-    insert_query = """SELECT id
-                      FROM urls
-                      WHERE name = %s"""
-    item_tuple = url
-    CURS.execute(insert_query, item_tuple)
-    result = CURS.fetchone()
-    return result
+# возвращаем id сайта если он существует в базе данных
+def check_url(url: str) -> (int, None):
+    with conn.cursor() as cur:
+        sql = """SELECT id
+                 FROM urls
+                 WHERE name = %s;"""
+        cur.execute(sql, (url,))
+        result = cur.fetchone()
+        if result:
+            return result[0]
 
 
-def get_url_info_by_id(url_id):
-    insert_query = """SELECT name, created_at
-                      FROM urls
-                      WHERE id = %s"""
-    CURS.execute(insert_query, (url_id,))
-    result = CURS.fetchone()
-    print(result)
+def get_url_info_by_id(url_id: str) -> tuple:
+    with conn.cursor() as cur:
+        sql = """SELECT name, created_at
+                 FROM urls
+                 WHERE id = %s;"""
+        cur.execute(sql, (url_id,))
+        result = cur.fetchone()
+        return result
+
+
+def get_all_urls():
+    with conn.cursor(cursor_factory=DictCursor) as cur:
+        sql = "SELECT * FROM urls ORDER BY id DESC;"
+        cur.execute(sql)
+        result = []
+        for row in cur:
+            result.append({'id': row['id'], 'name': row['name']})
+
     return result
