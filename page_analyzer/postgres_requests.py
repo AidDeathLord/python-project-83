@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import datetime
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2.extras import NamedTupleCursor
 import os
 
 
@@ -44,11 +44,34 @@ def get_url_info_by_id(url_id: str) -> tuple:
 
 
 def get_all_urls():
-    with conn.cursor(cursor_factory=DictCursor) as cur:
-        sql = "SELECT * FROM urls ORDER BY id DESC;"
-        cur.execute(sql)
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         result = []
-        for row in cur:
-            result.append({'id': row['id'], 'name': row['name']})
+        sql = """SELECT
+                    urls.id AS id,
+                    urls.name AS name,
+                    MAX(checks.created_at) AS last_check
+                FROM urls
+                LEFT JOIN urls_checks AS checks
+                    ON urls.id = checks.url_id
+                GROUP BY urls.id, checks.created_at
+                ORDER BY id DESC;"""
+        cur.execute(sql)
+        result.extend(cur.fetchall())
+    return result
 
+
+def add_check(url_id):
+    with conn.cursor() as cur:
+        sql = """INSERT INTO urls_checks (url_id, created_at) 
+                 VALUES (%s, %s);"""
+        cur.execute(sql, (url_id, datetime.date.today()))
+        conn.commit()
+
+
+def get_all_checks_for_url(url_id):
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
+        sql = "SELECT * FROM urls_checks WHERE url_id = %s ORDER BY id DESC;"
+        cur.execute(sql, (url_id,))
+        result = []
+        result.extend(cur.fetchall())
     return result

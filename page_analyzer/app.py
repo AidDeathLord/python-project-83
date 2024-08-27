@@ -60,11 +60,20 @@ def post_urls():
 def get_url(id):
     messages = get_flashed_messages(with_categories=True)
     url, created_at = db.get_url_info_by_id(id)
+    url_checks = db.get_all_checks_for_url(id)
     return render_template('url.html',
                            messages=messages,
                            id=id,
                            url=url,
-                           created_at=created_at)
+                           created_at=created_at,
+                           url_checks=url_checks)
+
+
+@app.post('/urls/<id>/checks')
+def post_checks(id):
+    messages = get_flashed_messages(with_categories=True)
+    db.add_check(id)
+    return redirect(url_for('get_url', id=id))
 
 
 def validate(url):
