@@ -33,14 +33,13 @@ def check_url(url: str) -> (int, None):
             return result[0]
 
 
-def get_url_info_by_id(url_id: str) -> tuple:
-    with conn.cursor() as cur:
+def get_url_info_by_id(url_id):
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         sql = """SELECT name, created_at
                  FROM urls
                  WHERE id = %s;"""
         cur.execute(sql, (url_id,))
-        result = cur.fetchone()
-        return result
+        return cur.fetchone()
 
 
 def get_all_urls():
@@ -49,22 +48,23 @@ def get_all_urls():
         sql = """SELECT
                     urls.id AS id,
                     urls.name AS name,
-                    MAX(checks.created_at) AS last_check
+                    MAX(checks.created_at) AS last_check,
+                    checks.status_code
                 FROM urls
                 LEFT JOIN urls_checks AS checks
                     ON urls.id = checks.url_id
-                GROUP BY urls.id, checks.created_at
+                GROUP BY urls.id, checks.status_code
                 ORDER BY id DESC;"""
         cur.execute(sql)
         result.extend(cur.fetchall())
     return result
 
 
-def add_check(url_id):
+def add_check(url_id, status_code):
     with conn.cursor() as cur:
-        sql = """INSERT INTO urls_checks (url_id, created_at) 
-                 VALUES (%s, %s);"""
-        cur.execute(sql, (url_id, datetime.date.today()))
+        sql = """INSERT INTO urls_checks (url_id, status_code, created_at) 
+                 VALUES (%s, %s, %s);"""
+        cur.execute(sql, (url_id, status_code, datetime.date.today()))
         conn.commit()
 
 

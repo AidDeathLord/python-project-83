@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import page_analyzer.postgres_requests as db
 import validators
 import os
+import requests
 
 
 load_dotenv()
@@ -59,20 +60,32 @@ def post_urls():
 @app.get('/urls/<int:id>')
 def get_url(id):
     messages = get_flashed_messages(with_categories=True)
-    url, created_at = db.get_url_info_by_id(id)
+    url_info = db.get_url_info_by_id(id)
     url_checks = db.get_all_checks_for_url(id)
     return render_template('url.html',
                            messages=messages,
                            id=id,
-                           url=url,
-                           created_at=created_at,
+                           url=url_info.name,
+                           created_at=url_info.created_at,
                            url_checks=url_checks)
 
 
 @app.post('/urls/<id>/checks')
 def post_checks(id):
-    messages = get_flashed_messages(with_categories=True)
-    db.add_check(id)
+    url_info = db.get_url_info_by_id(id)
+
+    try:
+        response = requests.get(url_info.name)
+        response.raise_for_status()
+    except requests.exceptions.RequestException():
+        flash('Произошла ошибка при проверке', 'error')
+        return render_template('url.html',
+                               id=id,
+                               url=url_info.name,
+                               created_at=url_info.created_at,
+                               url_checks=db.get_all_checks_for_url(id))
+
+    db.add_check(id, response.status_code)
     return redirect(url_for('get_url', id=id))
 
 
