@@ -17,7 +17,7 @@ def connect_db():
 def add_url(url: str) -> int:
     con = connect_db()
     cur = con.cursor()
-    sql = """INSERT INTO urls (name, created_at) 
+    sql = """INSERT INTO urls (name, created_at)
                     VALUES (%s, %s)
                     RETURNING id;"""
     cur.execute(sql, (url, datetime.date.today()))
@@ -46,9 +46,7 @@ def check_url(url: str) -> (int, None):
 def get_url_info_by_id(url_id):
     con = connect_db()
     cur = con.cursor(cursor_factory=NamedTupleCursor)
-    sql = """SELECT name, created_at
-             FROM urls
-             WHERE id = %s;"""
+    sql = "SELECT name, created_at FROM urls WHERE id = %s;"
     cur.execute(sql, (url_id,))
     result = cur.fetchone()
     cur.close()
