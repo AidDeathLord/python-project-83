@@ -3,3 +3,9 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/5a6ef50c4796ce7612bb/maintainability)](https://codeclimate.com/github/AidDeathLord/python-project-83/maintainability)
 
 ### https://python-project-83-isst.onrender.com
+
+Page Analyzer – это сайт, который анализирует указанные страницы на SEO-пригодност.
+
+![img.png](img.png)
+![img_1.png](img_1.png)
+![img_2.png](img_2.png)
