@@ -8,6 +8,7 @@ from flask import (Flask,
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 import page_analyzer.postgres_requests as db
+from page_analyzer.parser import parser
 import validators
 import os
 import requests
@@ -85,8 +86,8 @@ def post_checks(id):
                                url=url_info.name,
                                created_at=url_info.created_at,
                                url_checks=db.get_all_checks_for_url(id))
-
-    db.add_check(id, response.status_code)
+    h1, title, content = parser(response.text)
+    db.add_check(id, response.status_code, h1, title, content)
     return redirect(url_for('get_url', id=id))
 
 

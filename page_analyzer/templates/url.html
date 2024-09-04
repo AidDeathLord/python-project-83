@@ -67,9 +67,21 @@
         <tr>
           <td>{{ row.id }}</td>
           <td>{{ row.status_code }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          {% if row.h1 %}
+            <td>{{ row.h1 }}</td>
+          {% else %}
+            <td></td>
+          {% endif %}
+          {% if row.title %}
+            <td>{{ row.title }}</td>
+          {% else %}
+            <td></td>
+          {% endif %}
+           {% if row.description %}
+            <td>{{ row.description }}</td>
+          {% else %}
+            <td></td>
+          {% endif %}
           <td>{{ row.created_at }}</td>
         </tr>
       {% endfor %}
