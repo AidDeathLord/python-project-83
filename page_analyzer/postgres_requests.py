@@ -78,9 +78,16 @@ def get_all_urls():
 def add_check(url_id, status_code, h1, title, content):
     con = connect_db()
     cur = con.cursor()
-    sql = """INSERT INTO urls_checks (url_id, status_code, created_at, h1, title, description)
-             VALUES (%s, %s, %s, %s, %s, %s);"""
-    cur.execute(sql, (url_id, status_code, datetime.date.today(), h1, title, content))
+    sql = """INSERT INTO urls_checks
+             (url_id, status_code, created_at, h1, title, description)
+             VALUES
+             (%s, %s, %s, %s, %s, %s);"""
+    cur.execute(sql, (url_id,
+                      status_code,
+                      datetime.date.today(),
+                      h1,
+                      title,
+                      content))
     cur.close()
     con.commit()
     con.close()
