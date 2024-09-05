@@ -33,7 +33,7 @@ def urls():
     return render_template('urls.html', urls=_urls)
 
 
-@app.post('/url')
+@app.post('/urls')
 def post_urls():
     if not db.connect_db():
         abort(500)
