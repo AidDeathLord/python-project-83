@@ -66,10 +66,16 @@ def post_urls():
 @app.get('/urls/<int:id>')
 def get_url(id):
     messages = get_flashed_messages(with_categories=True)
+
+    # получаем инфо по ссылке
     url_info = db.get_url_info_by_id(id)
     if not url_info:
         return render_template('error404.html'), 404
+
+    # получаем инфу о поверках ссылки
     url_checks = db.get_all_checks_for_url(id)
+
+    # выводим весь результат на шаблон
     return render_template('url.html',
                            messages=messages,
                            id=id,
@@ -85,6 +91,7 @@ def post_checks(id):
         return render_template('error404.html'), 404
 
     try:
+        # пробуем получить ответ от сайта
         response = requests.get(url_info.name)
         response.raise_for_status()
     except requests.exceptions.RequestException:

@@ -48,6 +48,7 @@ def check_url(url: str) -> (int, None):
         return result[0]
 
 
+# получаем инфу из таблицы urls по id ссылки
 def get_url_info_by_id(url_id):
     con = connect_db()
     cur = con.cursor(cursor_factory=NamedTupleCursor)
@@ -59,6 +60,8 @@ def get_url_info_by_id(url_id):
     return result
 
 
+# получаем все ссылки
+# сгруппированные по последней проверке
 def get_all_urls():
     con = connect_db()
     cur = con.cursor(cursor_factory=NamedTupleCursor)
@@ -80,6 +83,7 @@ def get_all_urls():
     return result
 
 
+# записываем результат проверки
 def add_check(url_id, status_code, h1, title, content):
     con = connect_db()
     cur = con.cursor()
@@ -98,6 +102,7 @@ def add_check(url_id, status_code, h1, title, content):
     con.close()
 
 
+# получаем все проверки по id
 def get_all_checks_for_url(url_id):
     con = connect_db()
     cur = con.cursor(cursor_factory=NamedTupleCursor)
