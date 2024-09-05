@@ -4,7 +4,8 @@ from flask import (Flask,
                    get_flashed_messages,
                    flash,
                    url_for,
-                   redirect)
+                   redirect,
+                   abort)
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 import page_analyzer.postgres_requests as db
@@ -39,7 +40,7 @@ def post_urls():
     # проверяем существует ли сайт, если нет - возвращаем оповещение
     if validate(url):
         messages = get_flashed_messages(with_categories=True)
-        return render_template('index.html', messages=messages), 402
+        return render_template('index.html', messages=messages), 422
 
     # преобразуем ссылку к нужному формату
     url = urlparse(url)
@@ -63,6 +64,8 @@ def post_urls():
 def get_url(id):
     messages = get_flashed_messages(with_categories=True)
     url_info = db.get_url_info_by_id(id)
+    if not url_info:
+        abort(404)
     url_checks = db.get_all_checks_for_url(id)
     return render_template('url.html',
                            messages=messages,
@@ -75,20 +78,33 @@ def get_url(id):
 @app.post('/urls/<id>/checks')
 def post_checks(id):
     url_info = db.get_url_info_by_id(id)
+    if not url_info:
+        abort(404)
 
     try:
         response = requests.get(url_info.name)
         response.raise_for_status()
-    except requests.exceptions.RequestException():
-        flash('Произошла ошибка при проверке', 'error')
-        return render_template('url.html',
-                               id=id,
-                               url=url_info.name,
-                               created_at=url_info.created_at,
-                               url_checks=db.get_all_checks_for_url(id))
-    h1, title, content = parser(response.text)
-    db.add_check(id, response.status_code, h1, title, content)
+    except requests.exceptions.RequestException:
+        flash('Произошла ошибка при проверке', 'warning')
+        return redirect(url_for('get_url', id=id))
+
+    if response.status_code < 400:
+        h1, title, content = parser(response.text)
+        db.add_check(id, response.status_code, h1, title, content)
+        flash('Страница успешно проверена', 'success')
+    else:
+        flash('Произошла ошибка при проверке', 'warning')
     return redirect(url_for('get_url', id=id))
+
+
+@app.errorhandler(404)
+def error_404():
+    return render_template('error404.html'), 404
+
+
+@app.errorhandler(500)
+def error_404():
+    return render_template('error500.html'), 500
 
 
 def validate(url):
