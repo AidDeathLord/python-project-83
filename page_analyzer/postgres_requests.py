@@ -1,3 +1,4 @@
+import psycopg2
 from dotenv import load_dotenv
 import datetime
 from psycopg2 import connect
@@ -10,7 +11,11 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 
 def connect_db():
-    return connect(DATABASE_URL)
+    try:
+        con = connect(DATABASE_URL)
+    except psycopg2.OperationalError:
+        return None
+    return con
 
 
 # добавляем ссылки в базу и возвращаем ее id

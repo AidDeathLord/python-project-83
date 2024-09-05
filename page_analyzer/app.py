@@ -35,6 +35,9 @@ def urls():
 
 @app.post('/url')
 def post_urls():
+    if not db.connect_db():
+        abort(500)
+
     url = request.form.get('url', '')
 
     # проверяем существует ли сайт, если нет - возвращаем оповещение
@@ -65,7 +68,7 @@ def get_url(id):
     messages = get_flashed_messages(with_categories=True)
     url_info = db.get_url_info_by_id(id)
     if not url_info:
-        abort(404)
+        return render_template('error404.html'), 404
     url_checks = db.get_all_checks_for_url(id)
     return render_template('url.html',
                            messages=messages,
@@ -79,7 +82,7 @@ def get_url(id):
 def post_checks(id):
     url_info = db.get_url_info_by_id(id)
     if not url_info:
-        abort(404)
+        return render_template('error404.html'), 404
 
     try:
         response = requests.get(url_info.name)
@@ -97,13 +100,8 @@ def post_checks(id):
     return redirect(url_for('get_url', id=id))
 
 
-@app.errorhandler(404)
-def error_404():
-    return render_template('error404.html'), 404
-
-
 @app.errorhandler(500)
-def error_404():
+def error_500(error):
     return render_template('error500.html'), 500
 
 
