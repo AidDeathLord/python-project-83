@@ -16,14 +16,14 @@
       {% if urls %}
         {% for row in urls %}
           <tr>
-            <th>{{ row.id }}</th>
-            <th><a href="{{ url_for('get_url', id=row['id']) }}">{{ row.name }}</a></th>
+            <td>{{ row.id }}</td>
+            <td><a href="{{ url_for('get_url', id=row['id']) }}">{{ row.name }}</a></td>
             {% if row.last_check %}
-              <th>{{ row.last_check }}</th>
-              <th>{{ row.status_code }}</th>
+              <td>{{ row.last_check }}</td>
+              <td>{{ row.status_code }}</td>
             {% else %}
-              <th></th>
-              <th></th>
+              <td></td>
+              <td></td>
             {% endif %}
           </tr>
         {% endfor %}
