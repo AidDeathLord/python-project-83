@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 import page_analyzer.postgres_requests as db
 from page_analyzer.parser import parser
-import validators
+from page_analyzer.validator import validate
 import os
 import requests
 
@@ -107,16 +107,11 @@ def post_checks(id):
     return redirect(url_for('get_url', id=id))
 
 
+@app.errorhandler(404)
+def error_404(error):
+    return render_template('error404.html'), 404
+
+
 @app.errorhandler(500)
 def error_500(error):
     return render_template('error500.html'), 500
-
-
-def validate(url):
-    if not validators.url(url):
-        flash('Некорректный URL', 'error')
-    elif len(url) > 255:
-        flash('URL не должен превышать 255 символов', 'error')
-    else:
-        return False
-    return True
